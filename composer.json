@@ -1,17 +1,17 @@
 {
-    "name": "nmred/kafka-php",
+    "name": "staryPHP/kafka",
     "description": "Kafka client for php",
     "type": "library",
     "keywords": [
-        "Client",
+        "Php",
         "Kafka"
     ],
-    "homepage": "http://www.swanlinux.net",
-    "license": "BSD-3-Clause",
+    "homepage": "",
+    "license": "666",
     "require": {
         "php": ">=5.5",
-	"psr/log" : "1.0.2",
-	"amphp/amp": "v1.2.2"
+        "psr/log" : "^1.0.2",
+        "amphp/amp": "v1.2.2"
     },
     "autoload": {
         "psr-0": {
