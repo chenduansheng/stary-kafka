@@ -12,7 +12,9 @@
 // | $_SWANBR_WEB_DOMAIN_$
 // +---------------------------------------------------------------------------
 
-namespace Kafka;
+namespace KafkaTest\Protocol;
+
+//use \KafkaMock\Protocol\Encoder;
 
 /**
 +------------------------------------------------------------------------------
@@ -26,102 +28,90 @@ namespace Kafka;
 +------------------------------------------------------------------------------
 */
 
-class Producer
+class GroupCoordinatorTest extends \PHPUnit_Framework_TestCase
 {
-    use \Psr\Log\LoggerAwareTrait;
-    use \Kafka\LoggerTrait;
-
     // {{{ consts
     // }}}
     // {{{ members
-    
-    private $process = null;
+
+    /**
+     * group object
+     *
+     * @var mixed
+     * @access protected
+     */
+    protected $group = null;
 
     // }}}
     // {{{ functions
-    // {{{ public function __construct()
+    // {{{ public function setUp()
 
     /**
-     * __construct
+     * setUp
      *
      * @access public
-     * @param $hostList
-     * @param null $timeout
+     * @return void
      */
-    public function __construct(\Closure $producer = null)
+    public function setUp()
     {
-        if (is_null($producer)) {
-            $this->process = new \Kafka\Producer\SyncProcess();
-        } else {
-            $this->process = new \Kafka\Producer\Process($producer);
+        if (is_null($this->group)) {
+            $this->group = new \Kafka\Protocol\GroupCoordinator('0.9.0.1');
         }
     }
 
     // }}}
-    // {{{ public function send()
+    // {{{ public function testEncode()
 
     /**
-     * start producer
+     * testEncode
      *
      * @access public
-     * @data is data is boolean that is async process, thus it is sync process
      * @return void
      */
-    public function send($data = true)
+    public function testEncode()
     {
-        if ($this->logger) {
-            $this->process->setLogger($this->logger);
-        }
-        if (is_bool($data)) {
-            $this->process->start();
-            if ($data) {
-                \Amp\run();
-            }
-        } else {
-            return $this->process->send($data);
-        }
+        $data = array(
+            'group_id' => 'test',
+        );
+
+        $test = $this->group->encode($data);
+        $this->assertEquals(\bin2hex($test), '00000019000a00000000000a00096b61666b612d706870000474657374');
     }
 
     // }}}
-    // {{{ public function syncMeta()
+    // {{{ public function testEncodeNoGroupId()
 
     /**
-     * syncMeta producer
+     * testEncodeNoGroupId
      *
+     * @expectedException \Kafka\Exception\Protocol
+     * @expectedExceptionMessage given group coordinator invalid. `group_id` is undefined.
      * @access public
      * @return void
      */
-    public function syncMeta()
+    public function testEncodeNoGroupId()
     {
-        return $this->process->syncMeta();
+        $data = array(
+        );
+
+        $test = $this->group->encode($data);
     }
 
     // }}}
-    // {{{ public function success()
+    // {{{ public function testDecode()
 
     /**
-     * producer success
+     * testDecode
      *
      * @access public
      * @return void
      */
-    public function success(\Closure $success = null)
+    public function testDecode()
     {
-        $this->process->setSuccess($success);
-    }
-
-    // }}}
-    // {{{ public function error()
-
-    /**
-     * producer error
-     *
-     * @access public
-     * @return void
-     */
-    public function error(\Closure $error = null)
-    {
-        $this->process->setError($error);
+        $data = '000000000003000b31302e31332e342e313539000023e8';
+        $test = $this->group->decode(\hex2bin($data));
+        $result = '{"errorCode":0,"coordinatorId":3,"coordinatorHost":"10.13.4.159","coordinatorPort":9192}';
+        $this->assertEquals(json_encode($test), $result);
     }
 
     // }}}
