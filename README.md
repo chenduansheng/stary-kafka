@@ -3,7 +3,7 @@ Kafka-php
 
 [中文文档](README_CH.md)
 
-[![QQ Group](https://img.shields.io/badge/QQ%20Group-657517955-brightgreen.svg)]()
+[![QQ Group](https://img.shields.io/badge/QQ%20Group-531522091-brightgreen.svg)]()
 [![Build Status](https://travis-ci.org/weiboad/kafka-php.svg?branch=master)](https://travis-ci.org/weiboad/kafka-php)
 [![Packagist](https://img.shields.io/packagist/dm/nmred/kafka-php.svg?style=plastic)]()
 [![Packagist](https://img.shields.io/packagist/dd/nmred/kafka-php.svg?style=plastic)]()
@@ -19,7 +19,7 @@ Kafka-php is a pure PHP kafka client that currently supports greater than 0.8.x 
 
 ## Requirements
 
-* Minimum PHP version: 7.1
+* Minimum PHP version: 5.5
 * Kafka version greater than 0.8
 * The consumer module needs kafka broker version  greater than 0.9.0
 
@@ -29,11 +29,8 @@ Add the lib directory to the PHP include_path and use an autoloader like the one
 
 ## Composer Install
 
-Simply add a dependency `nmred/kafka-php` to your project if you use Composer to manage the dependencies of your project.
- 
-`$ composer require nmred/kafka-php`
+Simply add a dependency on nmred/kafka-php to your project's composer.json file if you use Composer to manage the dependencies of your project. Here is a minimal example of a composer.json file :
 
- Here is a minimal example of a composer.json file :
 ```
 {
 	"require": {
@@ -64,21 +61,19 @@ $logger->pushHandler(new StdoutHandler());
 $config = \Kafka\ProducerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('10.13.4.159:9192');
-$config->setBrokerVersion('1.0.0');
+$config->setBrokerVersion('0.9.0.1');
 $config->setRequiredAck(1);
 $config->setIsAsyn(false);
 $config->setProduceInterval(500);
-$producer = new \Kafka\Producer(
-    function() {
-        return [
-            [
-                'topic' => 'test',
-                'value' => 'test....message.',
-                'key' => 'testkey',
-            ],
-        ];
-    }
-);
+$producer = new \Kafka\Producer(function() {
+	return array(
+		array(
+			'topic' => 'test',
+			'value' => 'test....message.',
+			'key' => 'testkey',
+			),
+	);
+});
 $producer->setLogger($logger);
 $producer->success(function($result) {
 	var_dump($result);
@@ -91,7 +86,7 @@ $producer->send(true);
 
 ### Synchronous mode
 
-```php
+```
 <?php
 require '../vendor/autoload.php';
 date_default_timezone_set('PRC');
@@ -105,7 +100,7 @@ $logger->pushHandler(new StdoutHandler());
 $config = \Kafka\ProducerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('127.0.0.1:9192');
-$config->setBrokerVersion('1.0.0');
+$config->setBrokerVersion('0.9.0.1');
 $config->setRequiredAck(1);
 $config->setIsAsyn(false);
 $config->setProduceInterval(500);
@@ -113,13 +108,14 @@ $producer = new \Kafka\Producer();
 $producer->setLogger($logger);
 
 for($i = 0; $i < 100; $i++) {
-    $producer->send([
-        [
-            'topic' => 'test1',
-            'value' => 'test1....message.',
-            'key' => '',
-        ],
-    ]);
+        $result = $producer->send(array(
+                array(
+                        'topic' => 'test1',
+                        'value' => 'test1....message.',
+                        'key' => '',
+                ),
+        ));
+        var_dump($result);
 }
 ```
 
@@ -140,8 +136,8 @@ $config = \Kafka\ConsumerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('10.13.4.159:9192');
 $config->setGroupId('test');
-$config->setBrokerVersion('1.0.0');
-$config->setTopics(['test']);
+$config->setBrokerVersion('0.9.0.1');
+$config->setTopics(array('test'));
 //$config->setOffsetReset('earliest');
 $consumer = new \Kafka\Consumer();
 $consumer->setLogger($logger);
@@ -157,6 +153,5 @@ Refer [Example](https://github.com/weiboad/kafka-php/tree/master/example)
 
 ## QQ Group
 
-Group 1: 531522091 
-Group 2: 657517955
+531522091
 ![QQ Group](docs/qq_group.png)
