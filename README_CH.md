@@ -1,7 +1,7 @@
 Kafka-php
 ==========
 
-[中文文档](README_CH.md)
+[English Document](README.md)
 
 [![QQ Group](https://img.shields.io/badge/QQ%20Group-657517955-brightgreen.svg)]()
 [![Build Status](https://travis-ci.org/weiboad/kafka-php.svg?branch=master)](https://travis-ci.org/weiboad/kafka-php)
@@ -13,27 +13,21 @@ Kafka-php
 [![GitHub stars](https://img.shields.io/github/stars/weiboad/kafka-php.svg?style=plastic)](https://github.com/weiboad/kafka-php/stargazers)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg?style=plastic)](https://raw.githubusercontent.com/weiboad/kafka-php/master/LICENSE)
 
-Kafka-php is a pure PHP kafka client that currently supports greater than 0.8.x version of Kafka, this project v0.2.x and v0.1.x are incompatible if using the original v0.1.x You can refer to the document 
-[Kafka PHP v0.1.x Document](https://github.com/weiboad/kafka-php/blob/v0.1.6/README.md), but it is recommended to switch to v0.2.x . v0.2.x use PHP asynchronous implementation and kafka broker interaction, more stable than v0.1.x efficient, because the use of PHP language so do not compile any expansion can be used to reduce the access and maintenance costs
+Kafka-php 使用纯粹的PHP 编写的 kafka 客户端，目前支持 0.8.x 以上版本的 Kafka，该项目 v0.2.x 和 v0.1.x 不兼容，如果使用原有的 v0.1.x 的可以参照文档 [Kafka PHP v0.1.x Document](https://github.com/weiboad/kafka-php/blob/v0.1.6/README.md), 不过建议切换到 v0.2.x 上。v0.2.x 使用 PHP 异步执行的方式来和kafka broker 交互，较 v0.1.x 更加稳定高效, 由于使用 PHP 语言编写所以不用编译任何的扩展就可以使用，降低了接入与维护成本
 
 
-## Requirements
+## 安装环境要求
 
-* Minimum PHP version: 7.1
-* Kafka version greater than 0.8
-* The consumer module needs kafka broker version  greater than 0.9.0
+* PHP 版本大于 5.5
+* Kafka Server 版本大于 0.8.0
+* 消费模块 Kafka Server 版本需要大于 0.9.0
 
 ## Installation
 
-Add the lib directory to the PHP include_path and use an autoloader like the one in the examples directory (the code follows the PEAR/Zend one-class-per-file convention).
+## 使用 Composer 安装
 
-## Composer Install
+添加 composer 依赖 `nmred/kafka-php` 到项目的 `composer.json` 文件中即可，如：
 
-Simply add a dependency `nmred/kafka-php` to your project if you use Composer to manage the dependencies of your project.
- 
-`$ composer require nmred/kafka-php`
-
- Here is a minimal example of a composer.json file :
 ```
 {
 	"require": {
@@ -42,13 +36,13 @@ Simply add a dependency `nmred/kafka-php` to your project if you use Composer to
 }
 ```
 
-## Configuration
+## 配置
 
-Configuration properties are documented in [Configuration](docs/Configure.md)
+配置参数见 [配置](docs/Configure.md)
 
-## Producer
+## Produce
 
-### Asynchronous mode
+### 异步回调方式调用
 
 ```php
 <?php
@@ -64,34 +58,32 @@ $logger->pushHandler(new StdoutHandler());
 $config = \Kafka\ProducerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('10.13.4.159:9192');
-$config->setBrokerVersion('1.0.0');
+$config->setBrokerVersion('0.9.0.1');
 $config->setRequiredAck(1);
 $config->setIsAsyn(false);
 $config->setProduceInterval(500);
-$producer = new \Kafka\Producer(
-    function() {
-        return [
-            [
-                'topic' => 'test',
-                'value' => 'test....message.',
-                'key' => 'testkey',
-            ],
-        ];
-    }
-);
+$producer = new \Kafka\Producer(function() {
+	return array(
+		array(
+			'topic' => 'test',
+			'value' => 'test....message.',
+			'key' => 'testkey',
+		),
+	);
+});
 $producer->setLogger($logger);
 $producer->success(function($result) {
 	var_dump($result);
 });
 $producer->error(function($errorCode) {
-		var_dump($errorCode);
+	var_dump($errorCode);
 });
 $producer->send(true);
 ```
 
-### Synchronous mode
+### 同步方式调用生产者
 
-```php
+```
 <?php
 require '../vendor/autoload.php';
 date_default_timezone_set('PRC');
@@ -105,7 +97,7 @@ $logger->pushHandler(new StdoutHandler());
 $config = \Kafka\ProducerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('127.0.0.1:9192');
-$config->setBrokerVersion('1.0.0');
+$config->setBrokerVersion('0.9.0.1');
 $config->setRequiredAck(1);
 $config->setIsAsyn(false);
 $config->setProduceInterval(500);
@@ -113,13 +105,14 @@ $producer = new \Kafka\Producer();
 $producer->setLogger($logger);
 
 for($i = 0; $i < 100; $i++) {
-    $producer->send([
-        [
-            'topic' => 'test1',
-            'value' => 'test1....message.',
-            'key' => '',
-        ],
-    ]);
+        $result = $producer->send(array(
+                array(
+                        'topic' => 'test1',
+                        'value' => 'test1....message.',
+                        'key' => '',
+                ),
+        ));
+        var_dump($result);
 }
 ```
 
@@ -140,8 +133,8 @@ $config = \Kafka\ConsumerConfig::getInstance();
 $config->setMetadataRefreshIntervalMs(10000);
 $config->setMetadataBrokerList('10.13.4.159:9192');
 $config->setGroupId('test');
-$config->setBrokerVersion('1.0.0');
-$config->setTopics(['test']);
+$config->setBrokerVersion('0.9.0.1');
+$config->setTopics(array('test'));
 //$config->setOffsetReset('earliest');
 $consumer = new \Kafka\Consumer();
 $consumer->setLogger($logger);
@@ -150,13 +143,12 @@ $consumer->start(function($topic, $part, $message) {
 });
 ```
 
-## Low-Level API
+## Basic Protocol
 
-Refer [Example](https://github.com/weiboad/kafka-php/tree/master/example)
+基础协议 API 调用方式见 [Example](https://github.com/weiboad/kafka-php/tree/master/example)
 
+## QQ 群号 
 
-## QQ Group
-
-Group 1: 531522091 
-Group 2: 657517955
+群一： 531522091 （已满）
+群二： 657517955
 ![QQ Group](docs/qq_group.png)
