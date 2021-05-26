@@ -1,13 +1,12 @@
 {
-    "name": "nmred/kafka-php",
+    "name": "stary/stary-kafka",
     "description": "Kafka client for php",
     "type": "library",
     "keywords": [
         "Client",
         "Kafka"
     ],
-    "homepage": "http://www.swanlinux.net",
-    "license": "BSD-3-Clause",
+    "homepage": "http://www.dreame.com",
     "config": {
         "platform": {
             "php": "7.1.12"
